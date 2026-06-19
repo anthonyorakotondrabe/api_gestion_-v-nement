@@ -78,12 +78,13 @@ class Lieu(Base):
 class Utilisateur(Base):
     """
     Modèle représentant un utilisateur du système.
-    L'id_utilisateur est lié à l'ID généré par Supabase Auth.
+    Indépendant de Supabase Auth, l'id est généré par défaut.
     """
     __tablename__ = "utilisateur"
-    id_utilisateur = Column(UUID(as_uuid=True), primary_key=True)
+    id_utilisateur = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     nom = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
     role = Column(Enum(RoleUtilisateur), default=RoleUtilisateur.Etudiant)
     id_filiere = Column(UUID(as_uuid=True), ForeignKey("filiere.id_filiere", ondelete="SET NULL"))
 

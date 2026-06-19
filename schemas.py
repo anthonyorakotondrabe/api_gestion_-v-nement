@@ -10,6 +10,17 @@ Ce module définit les schémas Pydantic pour la validation des données.
 Ils sont utilisés pour les entrées (requêtes) et les sorties (réponses) de l'API.
 """
 
+# --- AUTHENTIFICATION ---
+
+class Token(BaseModel):
+    """Schéma pour le token JWT retourné après connexion."""
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    """Schéma pour les données contenues dans le token."""
+    id_utilisateur: Optional[str] = None
+
 # --- FILIERE ---
 
 class FiliereBase(BaseModel):
@@ -68,8 +79,9 @@ class UtilisateurBase(BaseModel):
     id_filiere: Optional[UUID] = None
 
 class UtilisateurCreate(UtilisateurBase):
-    """Schéma pour la création d'un Utilisateur (l'ID provient de Supabase Auth)."""
-    id_utilisateur: UUID
+    """Schéma pour la création d'un Utilisateur."""
+    id_utilisateur: Optional[UUID] = None
+    password: str
 
 class Utilisateur(UtilisateurBase):
     """Schéma complet représentant un Utilisateur en sortie de l'API."""
