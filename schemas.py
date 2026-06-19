@@ -98,6 +98,13 @@ class UtilisateurCreate(UtilisateurBase):
     id_utilisateur: Optional[UUID] = None
     password: str
 
+class UtilisateurUpdate(BaseModel):
+    """Schéma pour la mise à jour d'un Utilisateur par un Admin."""
+    nom: Optional[str] = None
+    email: Optional[EmailStr] = None
+    role: Optional[RoleUtilisateur] = None
+    id_filiere: Optional[UUID] = None
+
 class Utilisateur(UtilisateurBase):
     """Schéma complet représentant un Utilisateur en sortie de l'API."""
     id_utilisateur: UUID

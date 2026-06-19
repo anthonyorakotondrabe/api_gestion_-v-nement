@@ -27,6 +27,10 @@ Ce document offre une vue d'ensemble rapide de l'API FastAPI et de son fonctionn
 ### 👥 Utilisateurs
 - `GET /utilisateurs/me` : Profil de l'utilisateur connecté.
 - `GET /utilisateurs/me/inscriptions` : Liste des événements de l'étudiant.
+- `GET /utilisateurs/` : Liste tous les utilisateurs (**Admin**).
+- `GET /utilisateurs/{id}` : Détails d'un utilisateur (**Admin**).
+- `PUT /utilisateurs/{id}` : Modifier un utilisateur (**Admin**).
+- `DELETE /utilisateurs/{id}` : Supprimer un utilisateur (**Admin**).
 
 ### 📅 Événements
 - `GET /evenements/` : Liste tous les événements (Public).

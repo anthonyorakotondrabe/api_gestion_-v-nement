@@ -15,6 +15,12 @@ def get_utilisateur(db: Session, id_utilisateur: UUID):
     """
     return db.query(models.Utilisateur).filter(models.Utilisateur.id_utilisateur == id_utilisateur).first()
 
+def get_utilisateurs(db: Session, skip: int = 0, limit: int = 100):
+    """
+    Récupère la liste de tous les utilisateurs avec pagination.
+    """
+    return db.query(models.Utilisateur).offset(skip).limit(limit).all()
+
 def get_utilisateur_by_email(db: Session, email: str):
     """
     Récupère un utilisateur par son email.
@@ -37,6 +43,26 @@ def create_utilisateur(db: Session, utilisateur: schemas.UtilisateurCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def update_utilisateur(db: Session, db_user: models.Utilisateur, user_update: schemas.UtilisateurUpdate):
+    """
+    Met à jour les informations d'un utilisateur.
+    """
+    update_data = user_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_user, key, value)
+
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+def delete_utilisateur(db: Session, db_user: models.Utilisateur):
+    """
+    Supprime un utilisateur de la base de données.
+    """
+    db.delete(db_user)
+    db.commit()
+    return True
 
 # --- Evenement ---
 
