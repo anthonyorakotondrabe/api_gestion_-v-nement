@@ -31,7 +31,13 @@ def read_root():
 
 @app.post("/auth/register", response_model=schemas.Utilisateur, tags=["Authentification"])
 def register(utilisateur: schemas.UtilisateurCreate, db: Session = Depends(get_db)):
-    """Crée un compte utilisateur avec mot de passe haché."""
+    """
+    Crée un compte utilisateur.
+    Sécurité : Le rôle est forcé à 'Etudiant' pour empêcher la création sauvage de comptes Admin.
+    """
+    # Forcer le rôle par défaut pour toute inscription publique
+    utilisateur.role = models.RoleUtilisateur.Etudiant
+
     db_user = crud.get_utilisateur_by_email(db, email=utilisateur.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Cet email est déjà utilisé.")
