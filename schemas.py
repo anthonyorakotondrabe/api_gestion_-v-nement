@@ -31,6 +31,10 @@ class FiliereCreate(FiliereBase):
     """Schéma pour la création d'une Filière."""
     pass
 
+class FiliereUpdate(BaseModel):
+    """Schéma pour la mise à jour d'une Filière."""
+    nom_filiere: Optional[str] = None
+
 class Filiere(FiliereBase):
     """Schéma complet représentant une Filière en sortie de l'API."""
     id_filiere: UUID
@@ -45,6 +49,10 @@ class CategorieBase(BaseModel):
 class CategorieCreate(CategorieBase):
     """Schéma pour la création d'une Catégorie."""
     pass
+
+class CategorieUpdate(BaseModel):
+    """Schéma pour la mise à jour d'une Catégorie."""
+    libelle: Optional[str] = None
 
 class Categorie(CategorieBase):
     """Schéma complet représentant une Catégorie en sortie de l'API."""
@@ -63,6 +71,13 @@ class LieuBase(BaseModel):
 class LieuCreate(LieuBase):
     """Schéma pour la création d'un Lieu."""
     pass
+
+class LieuUpdate(BaseModel):
+    """Schéma pour la mise à jour d'un Lieu."""
+    nom_lieu: Optional[str] = None
+    adresse: Optional[str] = None
+    ville: Optional[str] = None
+    code_postal: Optional[str] = None
 
 class Lieu(LieuBase):
     """Schéma complet représentant un Lieu en sortie de l'API."""

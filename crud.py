@@ -140,6 +140,14 @@ def delete_inscription(db: Session, db_inscription: models.Inscription):
 
 # --- Fonctions de Référence (Filiere, Categorie, Lieu) ---
 
+def get_filiere(db: Session, id_filiere: UUID):
+    """Récupère une filière par son ID."""
+    return db.query(models.Filiere).filter(models.Filiere.id_filiere == id_filiere).first()
+
+def get_filieres(db: Session, skip: int = 0, limit: int = 100):
+    """Récupère la liste des filières."""
+    return db.query(models.Filiere).offset(skip).limit(limit).all()
+
 def create_filiere(db: Session, filiere: schemas.FiliereCreate):
     """Crée une nouvelle filière."""
     db_filiere = models.Filiere(**filiere.model_dump())
@@ -147,6 +155,29 @@ def create_filiere(db: Session, filiere: schemas.FiliereCreate):
     db.commit()
     db.refresh(db_filiere)
     return db_filiere
+
+def update_filiere(db: Session, db_filiere: models.Filiere, filiere_update: schemas.FiliereUpdate):
+    """Met à jour une filière."""
+    update_data = filiere_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_filiere, key, value)
+    db.commit()
+    db.refresh(db_filiere)
+    return db_filiere
+
+def delete_filiere(db: Session, db_filiere: models.Filiere):
+    """Supprime une filière."""
+    db.delete(db_filiere)
+    db.commit()
+    return True
+
+def get_categorie(db: Session, id_categorie: UUID):
+    """Récupère une catégorie par son ID."""
+    return db.query(models.Categorie).filter(models.Categorie.id_categorie == id_categorie).first()
+
+def get_categories(db: Session, skip: int = 0, limit: int = 100):
+    """Récupère la liste des catégories."""
+    return db.query(models.Categorie).offset(skip).limit(limit).all()
 
 def create_categorie(db: Session, categorie: schemas.CategorieCreate):
     """Crée une nouvelle catégorie d'événement."""
@@ -156,6 +187,29 @@ def create_categorie(db: Session, categorie: schemas.CategorieCreate):
     db.refresh(db_cat)
     return db_cat
 
+def update_categorie(db: Session, db_categorie: models.Categorie, categorie_update: schemas.CategorieUpdate):
+    """Met à jour une catégorie."""
+    update_data = categorie_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_categorie, key, value)
+    db.commit()
+    db.refresh(db_categorie)
+    return db_categorie
+
+def delete_categorie(db: Session, db_categorie: models.Categorie):
+    """Supprime une catégorie."""
+    db.delete(db_categorie)
+    db.commit()
+    return True
+
+def get_lieu(db: Session, id_lieu: UUID):
+    """Récupère un lieu par son ID."""
+    return db.query(models.Lieu).filter(models.Lieu.id_lieu == id_lieu).first()
+
+def get_lieux(db: Session, skip: int = 0, limit: int = 100):
+    """Récupère la liste des lieux."""
+    return db.query(models.Lieu).offset(skip).limit(limit).all()
+
 def create_lieu(db: Session, lieu: schemas.LieuCreate):
     """Crée un nouveau lieu."""
     db_lieu = models.Lieu(**lieu.model_dump())
@@ -163,3 +217,18 @@ def create_lieu(db: Session, lieu: schemas.LieuCreate):
     db.commit()
     db.refresh(db_lieu)
     return db_lieu
+
+def update_lieu(db: Session, db_lieu: models.Lieu, lieu_update: schemas.LieuUpdate):
+    """Met à jour un lieu."""
+    update_data = lieu_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_lieu, key, value)
+    db.commit()
+    db.refresh(db_lieu)
+    return db_lieu
+
+def delete_lieu(db: Session, db_lieu: models.Lieu):
+    """Supprime un lieu."""
+    db.delete(db_lieu)
+    db.commit()
+    return True

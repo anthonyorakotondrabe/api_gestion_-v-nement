@@ -203,6 +203,11 @@ def cancel_inscription(
 
 # --- Routes de Référence (Administration) ---
 
+@app.get("/filieres/", response_model=List[schemas.Filiere], tags=["Administration"])
+def read_filieres(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Récupère la liste de toutes les filières."""
+    return crud.get_filieres(db, skip=skip, limit=limit)
+
 @app.post("/filieres/", response_model=schemas.Filiere, tags=["Administration"])
 def create_filiere(
     filiere: schemas.FiliereCreate,
@@ -213,6 +218,41 @@ def create_filiere(
     if current_user.role != models.RoleUtilisateur.Admin:
         raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
     return crud.create_filiere(db=db, filiere=filiere)
+
+@app.put("/filieres/{id_filiere}", response_model=schemas.Filiere, tags=["Administration"])
+def update_filiere(
+    id_filiere: UUID,
+    filiere_update: schemas.FiliereUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """Met à jour une filière (Réservé Admin)."""
+    if current_user.role != models.RoleUtilisateur.Admin:
+        raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
+    db_filiere = crud.get_filiere(db, id_filiere=id_filiere)
+    if not db_filiere:
+        raise HTTPException(status_code=404, detail="Filière non trouvée.")
+    return crud.update_filiere(db=db, db_filiere=db_filiere, filiere_update=filiere_update)
+
+@app.delete("/filieres/{id_filiere}", status_code=status.HTTP_204_NO_CONTENT, tags=["Administration"])
+def delete_filiere(
+    id_filiere: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """Supprime une filière (Réservé Admin)."""
+    if current_user.role != models.RoleUtilisateur.Admin:
+        raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
+    db_filiere = crud.get_filiere(db, id_filiere=id_filiere)
+    if not db_filiere:
+        raise HTTPException(status_code=404, detail="Filière non trouvée.")
+    crud.delete_filiere(db=db, db_filiere=db_filiere)
+    return None
+
+@app.get("/categories/", response_model=List[schemas.Categorie], tags=["Administration"])
+def read_categories(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Récupère la liste de toutes les catégories."""
+    return crud.get_categories(db, skip=skip, limit=limit)
 
 @app.post("/categories/", response_model=schemas.Categorie, tags=["Administration"])
 def create_categorie(
@@ -225,6 +265,44 @@ def create_categorie(
         raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
     return crud.create_categorie(db=db, categorie=categorie)
 
+@app.put("/categories/{id_categorie}", response_model=schemas.Categorie, tags=["Administration"])
+def update_categorie(
+    id_categorie: UUID,
+    categorie_update: schemas.CategorieUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """Met à jour une catégorie (Réservé Admin)."""
+    if current_user.role != models.RoleUtilisateur.Admin:
+        raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
+    db_cat = crud.get_categorie(db, id_categorie=id_categorie)
+    if not db_cat:
+        raise HTTPException(status_code=404, detail="Catégorie non trouvée.")
+    return crud.update_categorie(db=db, db_categorie=db_cat, categorie_update=categorie_update)
+
+@app.delete("/categories/{id_categorie}", status_code=status.HTTP_204_NO_CONTENT, tags=["Administration"])
+def delete_categorie(
+    id_categorie: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """Supprime une catégorie (Réservé Admin)."""
+    if current_user.role != models.RoleUtilisateur.Admin:
+        raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
+    db_cat = crud.get_categorie(db, id_categorie=id_categorie)
+    if not db_cat:
+        raise HTTPException(status_code=404, detail="Catégorie non trouvée.")
+    try:
+        crud.delete_categorie(db=db, db_categorie=db_cat)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Impossible de supprimer une catégorie liée à des événements.")
+    return None
+
+@app.get("/lieux/", response_model=List[schemas.Lieu], tags=["Administration"])
+def read_lieux(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Récupère la liste de tous les lieux."""
+    return crud.get_lieux(db, skip=skip, limit=limit)
+
 @app.post("/lieux/", response_model=schemas.Lieu, tags=["Administration"])
 def create_lieu(
     lieu: schemas.LieuCreate,
@@ -235,3 +313,36 @@ def create_lieu(
     if current_user.role != models.RoleUtilisateur.Admin:
         raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
     return crud.create_lieu(db=db, lieu=lieu)
+
+@app.put("/lieux/{id_lieu}", response_model=schemas.Lieu, tags=["Administration"])
+def update_lieu(
+    id_lieu: UUID,
+    lieu_update: schemas.LieuUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """Met à jour un lieu (Réservé Admin)."""
+    if current_user.role != models.RoleUtilisateur.Admin:
+        raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
+    db_lieu = crud.get_lieu(db, id_lieu=id_lieu)
+    if not db_lieu:
+        raise HTTPException(status_code=404, detail="Lieu non trouvé.")
+    return crud.update_lieu(db=db, db_lieu=db_lieu, lieu_update=lieu_update)
+
+@app.delete("/lieux/{id_lieu}", status_code=status.HTTP_204_NO_CONTENT, tags=["Administration"])
+def delete_lieu(
+    id_lieu: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """Supprime un lieu (Réservé Admin)."""
+    if current_user.role != models.RoleUtilisateur.Admin:
+        raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
+    db_lieu = crud.get_lieu(db, id_lieu=id_lieu)
+    if not db_lieu:
+        raise HTTPException(status_code=404, detail="Lieu non trouvé.")
+    try:
+        crud.delete_lieu(db=db, db_lieu=db_lieu)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Impossible de supprimer un lieu lié à des événements.")
+    return None

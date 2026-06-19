@@ -102,6 +102,32 @@ Comme l'API est **stateless** (sans état), la déconnexion se gère exclusiveme
 - **Méthode** : `DELETE`
 - **Protection** : L'utilisateur pour sa propre inscription, l'organisateur pour son événement, ou un Admin.
 
+---
+
+## ⚙️ Administration (Admin Uniquement)
+
+Ces endpoints sont réservés aux utilisateurs ayant le rôle `Admin`.
+
+### Filières
+- `GET /filieres/` : Lister les filières.
+- `POST /filieres/` : Créer une filière.
+- `PUT /filieres/{id}` : Modifier une filière.
+- `DELETE /filieres/{id}` : Supprimer une filière.
+
+### Catégories
+- `GET /categories/` : Lister les catégories.
+- `POST /categories/` : Créer une catégorie.
+- `PUT /categories/{id}` : Modifier une catégorie.
+- `DELETE /categories/{id}` : Supprimer une catégorie.
+
+### Lieux
+- `GET /lieux/` : Lister les lieux.
+- `POST /lieux/` : Créer un lieu.
+- `PUT /lieux/{id}` : Modifier un lieu.
+- `DELETE /lieux/{id}` : Supprimer un lieu.
+
+---
+
 ### Créer un événement (Organisateur/Admin)
 - **URL** : `/evenements/`
 - **Méthode** : `POST`

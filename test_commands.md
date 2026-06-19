@@ -1,17 +1,33 @@
 # Commandes de Test pour l'API Gestion d'Événements
 
-Voici les commandes `curl` pour tester votre API, y compris les restrictions de rôle (RBAC).
+Voici les commandes `curl` pour tester votre API, y compris les restrictions de rôle (RBAC) et la gestion des données de référence.
 
-### 1. Préparation (Admin)
-Connectez-vous avec un compte **Admin** pour créer les données de base (Filière, Catégorie, Lieu).
+### 1. Préparation et Administration (Admin)
+
+#### Création et Gestion des Filières
 ```bash
-# S'inscrire en tant qu'Admin
+# Inscription Admin
 curl -X POST http://127.0.0.1:8000/auth/register -H "Content-Type: application/json" -d '{
   "nom": "Admin", "email": "admin@univ.fr", "password": "admin_password", "role": "Admin"
 }'
 
-# Se connecter pour avoir le TOKEN_ADMIN
+# Connexion Admin (récupérez le token)
 curl -X POST http://127.0.0.1:8000/auth/login -d "username=admin@univ.fr&password=admin_password"
+
+# Créer une filière
+curl -X POST http://127.0.0.1:8000/filieres/ -H "Authorization: Bearer $TOKEN_ADMIN" -H "Content-Type: application/json" -d '{"nom_filiere": "Informatique"}'
+
+# Modifier une filière
+curl -X PUT http://127.0.0.1:8000/filieres/$ID_FILIERE -H "Authorization: Bearer $TOKEN_ADMIN" -H "Content-Type: application/json" -d '{"nom_filiere": "Informatique Avancée"}'
+```
+
+#### Création et Gestion des Catégories et Lieux
+```bash
+# Créer une catégorie
+curl -X POST http://127.0.0.1:8000/categories/ -H "Authorization: Bearer $TOKEN_ADMIN" -H "Content-Type: application/json" -d '{"libelle": "Conférence"}'
+
+# Créer un lieu
+curl -X POST http://127.0.0.1:8000/lieux/ -H "Authorization: Bearer $TOKEN_ADMIN" -H "Content-Type: application/json" -d '{"nom_lieu": "Amphi A", "ville": "Paris"}'
 ```
 
 ### 2. Gestion des Événements (CRUD & RBAC)
