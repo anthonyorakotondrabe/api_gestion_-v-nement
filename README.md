@@ -4,7 +4,7 @@ Cette API permet de gérer les événements au sein d'une université. Elle incl
 
 Le projet est conçu pour fonctionner avec **PostgreSQL** et est prêt pour une intégration avec **Supabase**.
 
-## 🚀 Fonctionnalités
+## Fonctionnalités
 
 -   **Gestion des Utilisateurs** : Création de profils liés à l'authentification Supabase.
 -   **Gestion des Événements** : Création, consultation et organisation d'événements universitaires.
@@ -12,7 +12,7 @@ Le projet est conçu pour fonctionner avec **PostgreSQL** et est prêt pour une 
 -   **Données de Référence** : Gestion des filières, lieux et catégories thématiques.
 -   **Architecture Propre** : Séparation des modèles, schémas (Pydantic), et logique CRUD.
 
-## 🛠 Technologies utilisées
+## Technologies utilisées
 
 -   **FastAPI** : Framework web moderne et rapide.
 -   **SQLAlchemy** : ORM pour l'interaction avec la base de données.
@@ -20,7 +20,7 @@ Le projet est conçu pour fonctionner avec **PostgreSQL** et est prêt pour une 
 -   **Pydantic** : Validation des données et schémas.
 -   **Python-dotenv** : Gestion des variables d'environnement.
 
-## ⚙️ Installation et Lancement
+##  Installation et Lancement
 
 ### 1. Cloner le projet
 ```bash
@@ -53,7 +53,7 @@ uvicorn main:app --reload
 L'API sera disponible sur `http://127.0.0.1:8000`.
 Accédez à la documentation interactive (Swagger) sur `http://127.0.0.1:8000/docs`.
 
-## 📂 Structure du Projet
+##  Structure du Projet
 
 -   `main.py` : Point d'entrée de l'application et définition des routes.
 -   `models.py` : Modèles SQLAlchemy (schéma de la base de données).
