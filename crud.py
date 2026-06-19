@@ -62,6 +62,26 @@ def create_evenement(db: Session, evenement: schemas.EvenementCreate, createur_i
     db.refresh(db_event)
     return db_event
 
+def update_evenement(db: Session, db_evenement: models.Evenement, evenement_update: schemas.EvenementUpdate):
+    """
+    Met à jour un événement existant.
+    """
+    update_data = evenement_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_evenement, key, value)
+
+    db.commit()
+    db.refresh(db_evenement)
+    return db_evenement
+
+def delete_evenement(db: Session, db_evenement: models.Evenement):
+    """
+    Supprime un événement.
+    """
+    db.delete(db_evenement)
+    db.commit()
+    return True
+
 # --- Inscription ---
 
 def get_inscription(db: Session, id_evenement: UUID, id_utilisateur: UUID):

@@ -1,66 +1,71 @@
-# Commandes de Test pour le Système d'Inscription
+# Commandes de Test pour l'API Gestion d'Événements
 
-Voici les commandes `curl` pour tester votre API. Assurez-vous que votre serveur est lancé avec `uvicorn main:app --reload`.
+Voici les commandes `curl` pour tester votre API, y compris les restrictions de rôle (RBAC).
 
-> [!NOTE]
-> Remplacez les UUID par des valeurs réelles générées lors de vos tests.
-
-### 1. Créer une Filière, Catégorie et Lieu
+### 1. Préparation (Admin)
+Connectez-vous avec un compte **Admin** pour créer les données de base (Filière, Catégorie, Lieu).
 ```bash
-curl -X POST http://127.0.0.1:8000/filieres/ -H "Content-Type: application/json" -d '{"nom_filiere": "Informatique"}'
-curl -X POST http://127.0.0.1:8000/categories/ -H "Content-Type: application/json" -d '{"libelle": "Conférence"}'
-curl -X POST http://127.0.0.1:8000/lieux/ -H "Content-Type: application/json" -d '{"nom_lieu": "Amphi A", "ville": "Paris"}'
+# S'inscrire en tant qu'Admin
+curl -X POST http://127.0.0.1:8000/auth/register -H "Content-Type: application/json" -d '{
+  "nom": "Admin", "email": "admin@univ.fr", "password": "admin_password", "role": "Admin"
+}'
+
+# Se connecter pour avoir le TOKEN_ADMIN
+curl -X POST http://127.0.0.1:8000/auth/login -d "username=admin@univ.fr&password=admin_password"
 ```
 
-### 2. Créer un Utilisateur (Organisateur)
+### 2. Gestion des Événements (CRUD & RBAC)
+
+#### Création (Organisateur)
 ```bash
-# Remplacez l'ID par un UUID valide (ex: généré par Supabase ou un site comme uuidgenerator.net)
-ORG_ID="550e8400-e29b-41d4-a716-446655440000"
-curl -X POST http://127.0.0.1:8000/utilisateurs/ -H "Content-Type: application/json" -d "{
-  \"id_utilisateur\": \"$ORG_ID\",
-  \"nom\": \"Jean Organisateur\",
-  \"email\": \"jean@univ.fr\",
-  \"role\": \"Organisateur\"
-}"
+# S'inscrire en tant qu'Organisateur
+curl -X POST http://127.0.0.1:8000/auth/register -H "Content-Type: application/json" -d '{
+  "nom": "Organisateur", "email": "org@univ.fr", "password": "org_password", "role": "Organisateur"
+}'
+
+# Se connecter pour avoir le TOKEN_ORG
+curl -X POST http://127.0.0.1:8000/auth/login -d "username=org@univ.fr&password=org_password"
+
+# Créer un événement
+curl -X POST http://127.0.0.1:8000/evenements/ \
+  -H "Authorization: Bearer $TOKEN_ORG" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titre": "Conférence IA",
+    "description": "Tout sur le futur",
+    "date_evenement": "2024-12-01T14:00:00",
+    "capacite_max": 50,
+    "id_categorie": "uuid-cat",
+    "id_lieu": "uuid-lieu"
+  }'
 ```
 
-### 3. Créer un Événement (avec capacité limitée à 1 pour le test)
+#### Tentative de modification par un Étudiant (Échec attendu)
 ```bash
-# Remplacez les IDs par ceux obtenus à l'étape 1
-CAT_ID="votre-id-categorie"
-LIEU_ID="votre-id-lieu"
+# S'inscrire en tant qu'Étudiant
+curl -X POST http://127.0.0.1:8000/auth/register -H "Content-Type: application/json" -d '{
+  "nom": "Etudiant", "email": "etud@univ.fr", "password": "etud_password", "role": "Etudiant"
+}'
 
-curl -X POST http://127.0.0.1:8000/utilisateurs/$ORG_ID/evenements/ -H "Content-Type: application/json" -d "{
-  \"titre\": \"Atelier FastAPI\",
-  \"description\": \"Apprendre FastAPI en 1h\",
-  \"date_evenement\": \"2024-12-25T10:00:00\",
-  \"capacite_max\": 1,
-  \"id_categorie\": \"$CAT_ID\",
-  \"id_lieu\": \"$LIEU_ID\"
-}"
+# Se connecter pour avoir le TOKEN_ETUD
+curl -X POST http://127.0.0.1:8000/auth/login -d "username=etud@univ.fr&password=etud_password"
+
+# Tenter de modifier un événement (Erreur 403)
+curl -X PUT http://127.0.0.1:8000/evenements/$EVENT_ID \
+  -H "Authorization: Bearer $TOKEN_ETUD" \
+  -d '{"titre": "Titre Piraté"}'
 ```
 
-### 4. Tester l'Inscription
+#### Modification par l'Organisateur (Réussite)
 ```bash
-EVENT_ID="votre-id-evenement"
-USER_ID="un-autre-uuid-utilisateur"
+curl -X PUT http://127.0.0.1:8000/evenements/$EVENT_ID \
+  -H "Authorization: Bearer $TOKEN_ORG" \
+  -H "Content-Type: application/json" \
+  -d '{"titre": "Nouveau Titre Officiel"}'
+```
 
-# Créer l'étudiant d'abord
-curl -X POST http://127.0.0.1:8000/utilisateurs/ -H "Content-Type: application/json" -d "{
-  \"id_utilisateur\": \"$USER_ID\",
-  \"nom\": \"Alice Etudiante\",
-  \"email\": \"alice@univ.fr\",
-  \"role\": \"Etudiant\"
-}"
-
-# S'inscrire (Réussite attendue)
-curl -X POST http://127.0.0.1:8000/evenements/$EVENT_ID/inscrire/$USER_ID
-
-# Retenter l'inscription (Erreur attendue : Déjà inscrit)
-curl -X POST http://127.0.0.1:8000/evenements/$EVENT_ID/inscrire/$USER_ID
-
-# Tenter d'inscrire un 2ème utilisateur (Erreur attendue : Événement complet)
-USER2_ID="uuid-2"
-curl -X POST http://127.0.0.1:8000/utilisateurs/ -H "Content-Type: application/json" -d "{\"id_utilisateur\": \"$USER2_ID\", \"nom\": \"Bob\", \"email\": \"bob@univ.fr\"}"
-curl -X POST http://127.0.0.1:8000/evenements/$EVENT_ID/inscrire/$USER2_ID
+#### Suppression par l'Admin (Réussite)
+```bash
+curl -X DELETE http://127.0.0.1:8000/evenements/$EVENT_ID \
+  -H "Authorization: Bearer $TOKEN_ADMIN"
 ```

@@ -105,6 +105,17 @@ class EvenementCreate(EvenementBase):
     """Schéma pour la création d'un Événement."""
     pass
 
+class EvenementUpdate(BaseModel):
+    """Schéma pour la mise à jour partielle d'un Événement."""
+    titre: Optional[str] = None
+    description: Optional[str] = None
+    date_evenement: Optional[datetime] = None
+    prix: Optional[Decimal] = None
+    capacite_max: Optional[int] = None
+    statut_evenement: Optional[StatutEvenement] = None
+    id_categorie: Optional[UUID] = None
+    id_lieu: Optional[UUID] = None
+
 class Evenement(EvenementBase):
     """Schéma complet représentant un Événement en sortie de l'API."""
     id_evenement: UUID

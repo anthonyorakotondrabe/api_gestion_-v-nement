@@ -76,6 +76,42 @@ def create_evenement(
         raise HTTPException(status_code=403, detail="Seuls les organisateurs peuvent créer des événements.")
     return crud.create_evenement(db=db, evenement=evenement, createur_id=current_user.id_utilisateur)
 
+@app.put("/evenements/{id_evenement}", response_model=schemas.Evenement, tags=["Événements"])
+def update_evenement(
+    id_evenement: UUID,
+    evenement_update: schemas.EvenementUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """Met à jour un événement (Réservé Organisateur/Admin)."""
+    db_evenement = crud.get_evenement(db, id_evenement=id_evenement)
+    if not db_evenement:
+        raise HTTPException(status_code=404, detail="Événement non trouvé.")
+
+    # Vérification des droits : Admin ou Créateur de l'événement
+    if current_user.role != models.RoleUtilisateur.Admin and db_evenement.createur_id != current_user.id_utilisateur:
+        raise HTTPException(status_code=403, detail="Vous n'avez pas le droit de modifier cet événement.")
+
+    return crud.update_evenement(db=db, db_evenement=db_evenement, evenement_update=evenement_update)
+
+@app.delete("/evenements/{id_evenement}", status_code=status.HTTP_204_NO_CONTENT, tags=["Événements"])
+def delete_evenement(
+    id_evenement: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """Supprime un événement (Réservé Organisateur/Admin)."""
+    db_evenement = crud.get_evenement(db, id_evenement=id_evenement)
+    if not db_evenement:
+        raise HTTPException(status_code=404, detail="Événement non trouvé.")
+
+    # Vérification des droits : Admin ou Créateur de l'événement
+    if current_user.role != models.RoleUtilisateur.Admin and db_evenement.createur_id != current_user.id_utilisateur:
+        raise HTTPException(status_code=403, detail="Vous n'avez pas le droit de supprimer cet événement.")
+
+    crud.delete_evenement(db=db, db_evenement=db_evenement)
+    return None
+
 # --- Routes Inscriptions ---
 
 @app.post("/evenements/{id_evenement}/inscrire", response_model=schemas.Inscription, tags=["Inscriptions"])
