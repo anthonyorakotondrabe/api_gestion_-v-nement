@@ -1,0 +1,119 @@
+from pydantic import BaseModel, EmailStr, ConfigDict
+from typing import List, Optional
+from datetime import datetime
+from uuid import UUID
+from decimal import Decimal
+from models import RoleUtilisateur, StatutEvenement, StatutInscription
+
+"""
+Ce module définit les schémas Pydantic pour la validation des données.
+Ils sont utilisés pour les entrées (requêtes) et les sorties (réponses) de l'API.
+"""
+
+# --- FILIERE ---
+
+class FiliereBase(BaseModel):
+    """Schéma de base pour une Filière."""
+    nom_filiere: str
+
+class FiliereCreate(FiliereBase):
+    """Schéma pour la création d'une Filière."""
+    pass
+
+class Filiere(FiliereBase):
+    """Schéma complet représentant une Filière en sortie de l'API."""
+    id_filiere: UUID
+    model_config = ConfigDict(from_attributes=True)
+
+# --- CATEGORIE ---
+
+class CategorieBase(BaseModel):
+    """Schéma de base pour une Catégorie."""
+    libelle: str
+
+class CategorieCreate(CategorieBase):
+    """Schéma pour la création d'une Catégorie."""
+    pass
+
+class Categorie(CategorieBase):
+    """Schéma complet représentant une Catégorie en sortie de l'API."""
+    id_categorie: UUID
+    model_config = ConfigDict(from_attributes=True)
+
+# --- LIEU ---
+
+class LieuBase(BaseModel):
+    """Schéma de base pour un Lieu."""
+    nom_lieu: str
+    adresse: Optional[str] = None
+    ville: Optional[str] = None
+    code_postal: Optional[str] = None
+
+class LieuCreate(LieuBase):
+    """Schéma pour la création d'un Lieu."""
+    pass
+
+class Lieu(LieuBase):
+    """Schéma complet représentant un Lieu en sortie de l'API."""
+    id_lieu: UUID
+    model_config = ConfigDict(from_attributes=True)
+
+# --- UTILISATEUR ---
+
+class UtilisateurBase(BaseModel):
+    """Schéma de base pour un Utilisateur."""
+    nom: str
+    email: EmailStr
+    role: RoleUtilisateur = RoleUtilisateur.Etudiant
+    id_filiere: Optional[UUID] = None
+
+class UtilisateurCreate(UtilisateurBase):
+    """Schéma pour la création d'un Utilisateur (l'ID provient de Supabase Auth)."""
+    id_utilisateur: UUID
+
+class Utilisateur(UtilisateurBase):
+    """Schéma complet représentant un Utilisateur en sortie de l'API."""
+    id_utilisateur: UUID
+    model_config = ConfigDict(from_attributes=True)
+
+# --- EVENEMENT ---
+
+class EvenementBase(BaseModel):
+    """Schéma de base pour un Événement."""
+    titre: str
+    description: Optional[str] = None
+    date_evenement: datetime
+    prix: Decimal = Decimal("0.0")
+    capacite_max: int
+    statut_evenement: StatutEvenement = StatutEvenement.Brouillon
+    id_categorie: UUID
+    id_lieu: UUID
+
+class EvenementCreate(EvenementBase):
+    """Schéma pour la création d'un Événement."""
+    pass
+
+class Evenement(EvenementBase):
+    """Schéma complet représentant un Événement en sortie de l'API."""
+    id_evenement: UUID
+    createur_id: UUID
+    date_creation: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+# --- INSCRIPTION ---
+
+class InscriptionBase(BaseModel):
+    """Schéma de base pour une Inscription."""
+    id_evenement: UUID
+
+class InscriptionCreate(InscriptionBase):
+    """Schéma pour la création d'une Inscription."""
+    pass
+
+class Inscription(InscriptionBase):
+    """Schéma complet représentant une Inscription en sortie de l'API."""
+    id_inscription: UUID
+    id_utilisateur: UUID
+    date_inscription: datetime
+    statut_inscription: StatutInscription
+    model_config = ConfigDict(from_attributes=True)
