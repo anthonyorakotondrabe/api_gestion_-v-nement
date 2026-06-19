@@ -143,6 +143,64 @@ def register_for_event(
     # 4. Créer l'inscription
     return crud.create_inscription(db=db, id_evenement=id_evenement, id_utilisateur=id_utilisateur)
 
+@app.get("/utilisateurs/me/inscriptions", response_model=List[schemas.Inscription], tags=["Inscriptions"])
+def read_my_inscriptions(
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """Récupère la liste des inscriptions de l'utilisateur connecté."""
+    return crud.get_inscriptions_by_user(db, id_utilisateur=current_user.id_utilisateur)
+
+@app.get("/evenements/{id_evenement}/inscriptions", response_model=List[schemas.Inscription], tags=["Inscriptions"])
+def read_event_inscriptions(
+    id_evenement: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """
+    Récupère la liste des inscrits à un événement.
+    Réservé à l'organisateur de l'événement ou à l'Admin.
+    """
+    db_event = crud.get_evenement(db, id_evenement=id_evenement)
+    if not db_event:
+        raise HTTPException(status_code=404, detail="Événement non trouvé.")
+
+    # Vérification des droits
+    if current_user.role != models.RoleUtilisateur.Admin and db_event.createur_id != current_user.id_utilisateur:
+        raise HTTPException(status_code=403, detail="Vous n'avez pas accès à la liste des participants de cet événement.")
+
+    return crud.get_inscriptions_by_event(db, id_evenement=id_evenement)
+
+@app.delete("/inscriptions/{id_inscription}", status_code=status.HTTP_204_NO_CONTENT, tags=["Inscriptions"])
+def cancel_inscription(
+    id_inscription: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """
+    Annule une inscription.
+    L'utilisateur peut annuler sa propre inscription.
+    L'organisateur de l'événement ou l'Admin peuvent également annuler une inscription.
+    """
+    db_inscription = crud.get_inscription_by_id(db, id_inscription=id_inscription)
+    if not db_inscription:
+        raise HTTPException(status_code=404, detail="Inscription non trouvée.")
+
+    db_event = crud.get_evenement(db, id_evenement=db_inscription.id_evenement)
+
+    # Vérification des droits : Soit c'est l'étudiant lui-même, soit l'organisateur de l'event, soit l'Admin
+    can_cancel = (
+        current_user.id_utilisateur == db_inscription.id_utilisateur or
+        current_user.id_utilisateur == db_event.createur_id or
+        current_user.role == models.RoleUtilisateur.Admin
+    )
+
+    if not can_cancel:
+        raise HTTPException(status_code=403, detail="Vous n'avez pas le droit d'annuler cette inscription.")
+
+    crud.delete_inscription(db, db_inscription=db_inscription)
+    return None
+
 # --- Routes de Référence (Administration) ---
 
 @app.post("/filieres/", response_model=schemas.Filiere, tags=["Administration"])

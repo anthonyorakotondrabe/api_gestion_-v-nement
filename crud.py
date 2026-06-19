@@ -112,6 +112,32 @@ def create_inscription(db: Session, id_evenement: UUID, id_utilisateur: UUID):
     db.refresh(db_inscription)
     return db_inscription
 
+def get_inscriptions_by_user(db: Session, id_utilisateur: UUID):
+    """
+    Récupère toutes les inscriptions d'un utilisateur donné.
+    """
+    return db.query(models.Inscription).filter(models.Inscription.id_utilisateur == id_utilisateur).all()
+
+def get_inscriptions_by_event(db: Session, id_evenement: UUID):
+    """
+    Récupère tous les inscrits à un événement donné.
+    """
+    return db.query(models.Inscription).filter(models.Inscription.id_evenement == id_evenement).all()
+
+def get_inscription_by_id(db: Session, id_inscription: UUID):
+    """
+    Récupère une inscription par son ID.
+    """
+    return db.query(models.Inscription).filter(models.Inscription.id_inscription == id_inscription).first()
+
+def delete_inscription(db: Session, db_inscription: models.Inscription):
+    """
+    Supprime une inscription.
+    """
+    db.delete(db_inscription)
+    db.commit()
+    return True
+
 # --- Fonctions de Référence (Filiere, Categorie, Lieu) ---
 
 def create_filiere(db: Session, filiere: schemas.FiliereCreate):

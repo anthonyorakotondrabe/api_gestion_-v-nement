@@ -87,6 +87,21 @@ Comme l'API est **stateless** (sans état), la déconnexion se gère exclusiveme
 - **Méthode** : `POST`
 - **Protection** : Requis un Token valide. L'utilisateur est identifié via le token, aucun corps de requête n'est nécessaire.
 
+### Voir mes inscriptions (Étudiant)
+- **URL** : `/utilisateurs/me/inscriptions`
+- **Méthode** : `GET`
+- **Protection** : Requis un Token valide.
+
+### Voir les inscrits d'un événement (Organisateur/Admin)
+- **URL** : `/evenements/{id_evenement}/inscriptions`
+- **Méthode** : `GET`
+- **Protection** : Requis un Token Admin ou du Créateur de l'événement.
+
+### Annuler une inscription (Utilisateur/Organisateur/Admin)
+- **URL** : `/inscriptions/{id_inscription}`
+- **Méthode** : `DELETE`
+- **Protection** : L'utilisateur pour sa propre inscription, l'organisateur pour son événement, ou un Admin.
+
 ### Créer un événement (Organisateur/Admin)
 - **URL** : `/evenements/`
 - **Méthode** : `POST`
