@@ -39,6 +39,7 @@ Ce document offre une vue d'ensemble rapide de l'API FastAPI et de son fonctionn
 - `DELETE /inscriptions/{id}` : Annuler une inscription.
 
 ### ⚙️ Administration (Admin uniquement)
+<<<<<<< HEAD
 - `POST /filieres/` : Créer une filière.
 - `POST /categories/` : Créer une catégorie.
 - `POST /lieux/` : Créer un lieu.
@@ -53,6 +54,22 @@ Ce document offre une vue d'ensemble rapide de l'API FastAPI et de son fonctionn
 - **401 Unauthorized** : Token invalide ou manquant.
 - **403 Forbidden** : Rôle insuffisant ou n'est pas le propriétaire.
 - **404 Not Found** : Ressource inexistante.
+=======
+- `GET /filieres/` : Lister les filières.
+- `POST /filieres/` : Créer une filière.
+- `PUT /filieres/{id}` : Modifier une filière.
+- `DELETE /filieres/{id}` : Supprimer une filière.
+
+- `GET /categories/` : Lister les catégories.
+- `POST /categories/` : Créer une catégorie.
+- `PUT /categories/{id}` : Modifier une catégorie.
+- `DELETE /categories/{id}` : Supprimer une catégorie.
+
+- `GET /lieux/` : Lister les lieux.
+- `POST /lieux/` : Créer un lieu.
+- `PUT /lieux/{id}` : Modifier un lieu.
+- `DELETE /lieux/{id}` : Supprimer un lieu.
+>>>>>>> admin
 
 ---
 
