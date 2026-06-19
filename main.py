@@ -172,7 +172,7 @@ def delete_evenement(
     crud.delete_evenement(db=db, db_evenement=db_evenement)
     return None
 
-# --- Routes Inscriptions ---
+# --- Routes Inscriptions pour événement---
 
 @app.post("/evenements/{id_evenement}/inscrire", response_model=schemas.Inscription, tags=["Inscriptions"])
 def register_for_event(
