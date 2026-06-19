@@ -99,7 +99,7 @@ def count_inscriptions_evenement(db: Session, id_evenement: UUID):
     """
     return db.query(models.Inscription).filter(
         models.Inscription.id_evenement == id_evenement,
-        models.Inscription.statut_inscription != models.StatutInscription.Annule
+        models.Inscription.statut_inscription != models.StatutInscription.Annule.value
     ).count()
 
 def create_inscription(db: Session, id_evenement: UUID, id_utilisateur: UUID):
