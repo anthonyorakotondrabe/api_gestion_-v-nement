@@ -30,6 +30,21 @@ curl -X POST http://127.0.0.1:8000/categories/ -H "Authorization: Bearer $TOKEN_
 curl -X POST http://127.0.0.1:8000/lieux/ -H "Authorization: Bearer $TOKEN_ADMIN" -H "Content-Type: application/json" -d '{"nom_lieu": "Amphi A", "ville": "Paris"}'
 ```
 
+#### Gestion des Utilisateurs (Admin)
+```bash
+# Lister les utilisateurs
+curl -X GET http://127.0.0.1:8000/utilisateurs/ -H "Authorization: Bearer $TOKEN_ADMIN"
+
+# Modifier le rôle d'un utilisateur (ex: promouvoir en Organisateur)
+curl -X PUT http://127.0.0.1:8000/utilisateurs/$ID_UTILISATEUR \
+  -H "Authorization: Bearer $TOKEN_ADMIN" \
+  -H "Content-Type: application/json" \
+  -d '{"role": "Organisateur"}'
+
+# Supprimer un utilisateur
+curl -X DELETE http://127.0.0.1:8000/utilisateurs/$ID_UTILISATEUR -H "Authorization: Bearer $TOKEN_ADMIN"
+```
+
 ### 2. Gestion des Événements (CRUD & RBAC)
 
 #### Création (Organisateur)

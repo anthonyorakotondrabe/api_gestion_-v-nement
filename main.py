@@ -18,14 +18,14 @@ models.Base.metadata.create_all(bind=engine)
 
 # Initialisation de l'application FastAPI
 app = FastAPI(
-    title="Gestion Événements Universitaires",
-    description="API pour la gestion des événements universitaires avec Authentification JWT."
+    title="Gestion Événements Universitaires ",
+description="API pour la gestion des événements universitaires par Anthonyo RAKOTONDRABE"
 )
 
 @app.get("/")
 def read_root():
     """Route d'accueil de l'API."""
-    return {"message": "Bienvenue sur l'API de gestion d'événements universitaires"}
+    return {"message": "Bienvenue sur l'API de gestion d'événements universitaires conçu par Anthonyo RAKOTONDRABE"}
 
 # --- Authentification ---
 
@@ -56,6 +56,66 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 def read_users_me(current_user: models.Utilisateur = Depends(auth.get_current_user)):
     """Récupère les informations de l'utilisateur connecté."""
     return current_user
+
+@app.get("/utilisateurs/", response_model=List[schemas.Utilisateur], tags=["Utilisateurs"])
+def read_utilisateurs(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """Lister tous les utilisateurs (Réservé Admin)."""
+    if current_user.role != models.RoleUtilisateur.Admin:
+        raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
+    return crud.get_utilisateurs(db, skip=skip, limit=limit)
+
+@app.get("/utilisateurs/{id_utilisateur}", response_model=schemas.Utilisateur, tags=["Utilisateurs"])
+def read_utilisateur(
+    id_utilisateur: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """Récupérer un utilisateur spécifique (Réservé Admin)."""
+    if current_user.role != models.RoleUtilisateur.Admin:
+        raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
+    db_user = crud.get_utilisateur(db, id_utilisateur=id_utilisateur)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé.")
+    return db_user
+
+@app.put("/utilisateurs/{id_utilisateur}", response_model=schemas.Utilisateur, tags=["Utilisateurs"])
+def update_utilisateur(
+    id_utilisateur: UUID,
+    user_update: schemas.UtilisateurUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """Mettre à jour un utilisateur (Réservé Admin)."""
+    if current_user.role != models.RoleUtilisateur.Admin:
+        raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
+
+    db_user = crud.get_utilisateur(db, id_utilisateur=id_utilisateur)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé.")
+
+    return crud.update_utilisateur(db=db, db_user=db_user, user_update=user_update)
+
+@app.delete("/utilisateurs/{id_utilisateur}", status_code=status.HTTP_204_NO_CONTENT, tags=["Utilisateurs"])
+def delete_utilisateur(
+    id_utilisateur: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """Supprimer un utilisateur (Réservé Admin)."""
+    if current_user.role != models.RoleUtilisateur.Admin:
+        raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
+
+    db_user = crud.get_utilisateur(db, id_utilisateur=id_utilisateur)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé.")
+
+    crud.delete_utilisateur(db=db, db_user=db_user)
+    return None
 
 # --- Routes Événements ---
 
