@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List
@@ -22,6 +23,20 @@ app = FastAPI(
 description="API pour la gestion des événements universitaires par Anthonyo RAKOTONDRABE"
 )
 
+# Configuration du Middleware CORS
+origins = [
+    "http://localhost:5173",
+    "https://unievent-eta.vercel.app",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def read_root():
     """Route d'accueil de l'API."""
@@ -33,7 +48,7 @@ def read_root():
 def register(utilisateur: schemas.UtilisateurCreate, db: Session = Depends(get_db)):
     """
     Crée un compte utilisateur.
-    Sécurité : Le rôle est forcé à 'Etudiant' pour empêcher la création sauvage de comptes Admin.
+    Sécurité :Forcé ho Etudiant foana ny rôle eto pour raison de sécrité.
     """
     # Forcer le rôle par défaut pour toute inscription publique
     utilisateur.role = models.RoleUtilisateur.Etudiant
