@@ -96,9 +96,9 @@ def read_utilisateur(
     db: Session = Depends(get_db),
     current_user: models.Utilisateur = Depends(auth.get_current_user)
 ):
-    """Récupérer un utilisateur spécifique (Réservé Admin)."""
-    if current_user.role != models.RoleUtilisateur.Admin:
-        raise HTTPException(status_code=403, detail="Réservé aux administrateurs.")
+    """Récupérer un utilisateur spécifique (Réservé Admin/Organisateur)."""
+    if current_user.role not in [models.RoleUtilisateur.Admin, models.RoleUtilisateur.Organisateur]:
+        raise HTTPException(status_code=403, detail="Réservé aux administrateurs ou organisateurs.")
     db_user = crud.get_utilisateur(db, id_utilisateur=id_utilisateur)
     if not db_user:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé.")
