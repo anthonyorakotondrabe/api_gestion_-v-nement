@@ -145,14 +145,22 @@ def read_evenements(skip: int = 0, limit: int = 100, db: Session = Depends(get_d
     """Récupère la liste de tous les événements (Public)."""
     return crud.get_evenements(db, skip=skip, limit=limit)
 
+@app.get("/evenements/{id_evenement}", response_model=schemas.Evenement, tags=["Événements"])
+def read_evenement(id_evenement: UUID, db: Session = Depends(get_db)):
+    """Récupère un événement spécifique par son ID (Public)."""
+    db_evenement = crud.get_evenement(db, id_evenement=id_evenement)
+    if not db_evenement:
+        raise HTTPException(status_code=404, detail="Événement non trouvé.")
+    return db_evenement
+
 @app.post("/evenements/", response_model=schemas.Evenement, tags=["Événements"])
 def create_evenement(
     evenement: schemas.EvenementCreate,
     db: Session = Depends(get_db),
     current_user: models.Utilisateur = Depends(auth.get_current_user)
 ):
-    """Crée un événement (Réservé aux utilisateurs connectés)."""
-    # Vérification du rôle si besoin
+    """Crée un événement (Réservé Organisateur/Admin)."""
+    # Vérification du rôle
     if current_user.role not in [models.RoleUtilisateur.Organisateur, models.RoleUtilisateur.Admin]:
         raise HTTPException(status_code=403, detail="Seuls les organisateurs peuvent créer des événements.")
     return crud.create_evenement(db=db, evenement=evenement, createur_id=current_user.id_utilisateur)
@@ -169,9 +177,10 @@ def update_evenement(
     if not db_evenement:
         raise HTTPException(status_code=404, detail="Événement non trouvé.")
 
-    # Vérification des droits : Admin ou Créateur de l'événement
-    if current_user.role != models.RoleUtilisateur.Admin and db_evenement.createur_id != current_user.id_utilisateur:
-        raise HTTPException(status_code=403, detail="Vous n'avez pas le droit de modifier cet événement.")
+    # Vérification des droits : Admin ou (Organisateur ET Créateur de l'événement)
+    if current_user.role != models.RoleUtilisateur.Admin:
+        if current_user.role != models.RoleUtilisateur.Organisateur or db_evenement.createur_id != current_user.id_utilisateur:
+            raise HTTPException(status_code=403, detail="Seul l'organisateur créateur de l'événement ou un administrateur peut modifier cet événement.")
 
     return crud.update_evenement(db=db, db_evenement=db_evenement, evenement_update=evenement_update)
 
@@ -186,9 +195,10 @@ def delete_evenement(
     if not db_evenement:
         raise HTTPException(status_code=404, detail="Événement non trouvé.")
 
-    # Vérification des droits : Admin ou Créateur de l'événement
-    if current_user.role != models.RoleUtilisateur.Admin and db_evenement.createur_id != current_user.id_utilisateur:
-        raise HTTPException(status_code=403, detail="Vous n'avez pas le droit de supprimer cet événement.")
+    # Vérification des droits : Admin ou (Organisateur ET Créateur de l'événement)
+    if current_user.role != models.RoleUtilisateur.Admin:
+        if current_user.role != models.RoleUtilisateur.Organisateur or db_evenement.createur_id != current_user.id_utilisateur:
+            raise HTTPException(status_code=403, detail="Vous n'avez pas les droits nécessaires pour supprimer cet événement.")
 
     crud.delete_evenement(db=db, db_evenement=db_evenement)
     return None
@@ -246,9 +256,10 @@ def read_event_inscriptions(
     if not db_event:
         raise HTTPException(status_code=404, detail="Événement non trouvé.")
 
-    # Vérification des droits
-    if current_user.role != models.RoleUtilisateur.Admin and db_event.createur_id != current_user.id_utilisateur:
-        raise HTTPException(status_code=403, detail="Vous n'avez pas accès à la liste des participants de cet événement.")
+    # Vérification des droits : Admin ou (Organisateur ET Créateur de l'événement)
+    if current_user.role != models.RoleUtilisateur.Admin:
+        if current_user.role != models.RoleUtilisateur.Organisateur or db_event.createur_id != current_user.id_utilisateur:
+            raise HTTPException(status_code=403, detail="Seul l'organisateur de l'événement ou un administrateur peut voir les inscriptions.")
 
     return crud.get_inscriptions_by_event(db, id_evenement=id_evenement)
 
@@ -269,14 +280,15 @@ def cancel_inscription(
 
     db_event = crud.get_evenement(db, id_evenement=db_inscription.id_evenement)
 
-    # Vérification des droits : Soit c'est l'étudiant lui-même, soit l'organisateur de l'event, soit l'Admin
-    can_cancel = (
-        current_user.id_utilisateur == db_inscription.id_utilisateur or
-        current_user.id_utilisateur == db_event.createur_id or
-        current_user.role == models.RoleUtilisateur.Admin
+    # Vérification des droits : Soit c'est l'étudiant lui-même, soit l'organisateur (créateur) de l'event, soit l'Admin
+    is_owner = current_user.id_utilisateur == db_inscription.id_utilisateur
+    is_admin = current_user.role == models.RoleUtilisateur.Admin
+    is_organizer_of_event = (
+        current_user.role == models.RoleUtilisateur.Organisateur and
+        current_user.id_utilisateur == db_event.createur_id
     )
 
-    if not can_cancel:
+    if not (is_owner or is_admin or is_organizer_of_event):
         raise HTTPException(status_code=403, detail="Vous n'avez pas le droit d'annuler cette inscription.")
 
     crud.delete_inscription(db, db_inscription=db_inscription)
