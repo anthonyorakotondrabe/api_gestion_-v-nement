@@ -162,3 +162,7 @@ class Inscription(InscriptionBase):
     date_inscription: datetime
     statut_inscription: StatutInscription
     model_config = ConfigDict(from_attributes=True)
+
+class InscriptionUpdate(BaseModel):
+    """Schéma pour la mise à jour d'une Inscription."""
+    statut_inscription: Optional[StatutInscription] = None

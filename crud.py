@@ -156,6 +156,18 @@ def get_inscription_by_id(db: Session, id_inscription: UUID):
     """
     return db.query(models.Inscription).filter(models.Inscription.id_inscription == id_inscription).first()
 
+def update_inscription(db: Session, db_inscription: models.Inscription, inscription_update: schemas.InscriptionUpdate):
+    """
+    Met à jour une inscription existante.
+    """
+    update_data = inscription_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_inscription, key, value)
+
+    db.commit()
+    db.refresh(db_inscription)
+    return db_inscription
+
 def delete_inscription(db: Session, db_inscription: models.Inscription):
     """
     Supprime une inscription.

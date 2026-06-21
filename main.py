@@ -294,6 +294,35 @@ def cancel_inscription(
     crud.delete_inscription(db, db_inscription=db_inscription)
     return None
 
+@app.put("/inscriptions/{id_inscription}", response_model=schemas.Inscription, tags=["Inscriptions"])
+def update_inscription(
+    id_inscription: UUID,
+    inscription_update: schemas.InscriptionUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.Utilisateur = Depends(auth.get_current_user)
+):
+    """
+    Met à jour le statut d'une inscription.
+    Réservé à l'organisateur de l'événement ou à l'Admin.
+    """
+    db_inscription = crud.get_inscription_by_id(db, id_inscription=id_inscription)
+    if not db_inscription:
+        raise HTTPException(status_code=404, detail="Inscription non trouvée.")
+
+    db_event = crud.get_evenement(db, id_evenement=db_inscription.id_evenement)
+
+    # Vérification des droits : Admin ou (Organisateur ET Créateur de l'événement)
+    is_admin = current_user.role == models.RoleUtilisateur.Admin
+    is_organizer_of_event = (
+        current_user.role == models.RoleUtilisateur.Organisateur and
+        current_user.id_utilisateur == db_event.createur_id
+    )
+
+    if not (is_admin or is_organizer_of_event):
+        raise HTTPException(status_code=403, detail="Seul l'organisateur de l'événement ou un administrateur peut modifier cette inscription.")
+
+    return crud.update_inscription(db=db, db_inscription=db_inscription, inscription_update=inscription_update)
+
 # --- Routes de Référence (Administration) ---
 
 @app.get("/filieres/", response_model=List[schemas.Filiere], tags=["Administration"])
