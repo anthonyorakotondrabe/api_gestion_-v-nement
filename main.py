@@ -250,16 +250,25 @@ def read_event_inscriptions(
 ):
     """
     Récupère la liste des inscrits à un événement.
-    Réservé à l'organisateur de l'événement ou à l'Admin.
+    Réservé à l'organisateur de l'événement, à l'Étudiant ou à l'Admin.
     """
     db_event = crud.get_evenement(db, id_evenement=id_evenement)
     if not db_event:
         raise HTTPException(status_code=404, detail="Événement non trouvé.")
 
-    # Vérification des droits : Admin ou (Organisateur ET Créateur de l'événement)
-    if current_user.role != models.RoleUtilisateur.Admin:
-        if current_user.role != models.RoleUtilisateur.Organisateur or db_event.createur_id != current_user.id_utilisateur:
-            raise HTTPException(status_code=403, detail="Seul l'organisateur de l'événement ou un administrateur peut voir les inscriptions.")
+    # Vérification des droits : Admin, Etudiant ou (Organisateur ET Créateur de l'événement)
+    is_admin = current_user.role == models.RoleUtilisateur.Admin
+    is_etudiant = current_user.role == models.RoleUtilisateur.Etudiant
+    is_creator_organizer = (
+        current_user.role == models.RoleUtilisateur.Organisateur and
+        db_event.createur_id == current_user.id_utilisateur
+    )
+
+    if not (is_admin or is_etudiant or is_creator_organizer):
+        raise HTTPException(
+            status_code=403,
+            detail="Seul l'organisateur de l'événement, un étudiant ou un administrateur peut voir les inscriptions."
+        )
 
     return crud.get_inscriptions_by_event(db, id_evenement=id_evenement)
 
